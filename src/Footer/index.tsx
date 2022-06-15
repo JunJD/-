@@ -1,4 +1,5 @@
 import React,{FC,MouseEventHandler} from "react";
+import classNames from 'classnames'
 import './index.css'
 
 /* 左侧键盘 */
@@ -11,6 +12,12 @@ interface FooterProps{
 }
 
 const Footer:FC<FooterProps>=({onSelect,isDisabled})=>{   
+    // const [value,setValue] = useState('')
+
+    const classes = classNames("c3",{
+        "isDisabled":isDisabled    //点击失效的效果
+    })
+    
 /* 设置onSelect删除钩子 */
     const handleDelete=()=>{
         onSelect("delete")
@@ -22,7 +29,7 @@ const Footer:FC<FooterProps>=({onSelect,isDisabled})=>{
     }
 /* 设置onSelect提交钩子 */
     const handleSubmit=()=>{
-        
+
         if(!isDisabled){
             onSelect("submit")
         }
@@ -50,7 +57,7 @@ const Footer:FC<FooterProps>=({onSelect,isDisabled})=>{
                 <p>删除</p>
             </div>
 
-            <div className="c3"
+            <div className={classes}
             onClick={handleSubmit}
             >    
                 <p>提现</p>

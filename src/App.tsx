@@ -94,12 +94,17 @@ function App() {
         })
         break;
       case "submit": //
+      if(inputValue){
         if(window.confirm("确定提现吗")){
 
-            setInputValue('')
+          setInputValue('')
 
-          handleMoney(Number(inputValue))
-        }
+        handleMoney(Number(inputValue))
+      }
+      }else{
+        setIsDisabled(true) // 未输入 按钮失效
+      }
+        
 
     }
   }

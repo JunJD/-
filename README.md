@@ -4,7 +4,7 @@
 npm i 下载依赖
 npm yarn 启动项目
 
-打开浏览器按ctrl+shift+i 打开浏览器检查，选择手机模式
+打开浏览器按ctrl+shift+i 打开浏览器检查，选择手机模式！！！
 
 
 
@@ -18,3 +18,5 @@ npm yarn 启动项目
 父组件 App
 头部组件 Header 
 底部组件 Footer
+
+

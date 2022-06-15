@@ -56,4 +56,11 @@ Footer{
     justify-content: center;
     align-items: center;
 }
+.isDisabled.c3{
+    cursor:no-drop;
+
+}
+.isDisabled.c3:hover{
+    background-color: rgba(104, 104, 104, 0.484);
+}
 
