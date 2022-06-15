@@ -8,10 +8,12 @@ interface WithdrawalRecordProps{
   ServiceCharge?:number
 }
 
+
 function App() {
   const [inputValue,setInputValue] = useState<string>('') //input框UI数据
   const [money,setMoney] = useState<string>('') //零钱余额UI数据
-
+  const [isDisabled,setIsDisabled ] = useState<boolean>(false) //是否禁用按钮
+  
   const [WithdrawalRecordArr , SetWithdrawalRecordArr] = useState<WithdrawalRecordProps[]>([])
 
   const Cumulative =useMemo(()=>{
@@ -24,7 +26,6 @@ function App() {
   useEffect(()=>{
           if(isRef.current){
 
-/* 解决规则3问题，记录提现记录 */
             localStorage.setItem("withdrawalRecordArr",JSON.stringify(WithdrawalRecordArr))
 
           }else{
@@ -36,53 +37,79 @@ function App() {
 
 /* 解决规则1问题，提现不得超过余额 */
   const isSubmit=(value:string)=>{
+    /* 获取当前的剩余总额 */
     const balance = localStorage.getItem("money")
 
     setInputValue((prevalue)=>{
+      const currentValue =  prevalue.concat(value)
 
-      if(Number(balance)>=(Number(prevalue)*10)){
-        var patt = /^[0-9]+([.]{1}[0-9]+){0,1}$/;
+      setIsDisabled(false) //避免错误失误导致后续也无法提现
 
-        if(patt.test(value)||(prevalue?.indexOf('.')===-1 && prevalue.length)){
-            const index = prevalue?.indexOf('.')
-            const length = String.prototype.slice.call(prevalue,index).length
-
-            if(length>2){
-/*解决规则3问题，小数点后最多两位数进行提现 */
-              console.error("请最少输入0.01元~")
-              return prevalue
-            }
-
-            return prevalue.concat(value)
-        }   
-
+      if (currentValue[0] === '.') return prevalue; // 第一位是小数点，阻止更新
+      
+      if (currentValue[0] === '0') { // 第一位是0
+        if (currentValue[1] && currentValue[1] !== '.') return prevalue ; // 第二位存在且不是小数点，阻止更新
+      }
+    
+      if (currentValue.split('').filter(s => s === '.').length > 1) return prevalue; // 包含多个小数点，阻止更新
+    
+    
+      if (currentValue.includes('.')) { // 小数
+        if (currentValue.split('.')[1].length > 2) return prevalue; // 小数位大于2，阻止更新
       }
 
-        alert("余额不是那么足了~")
-        console.error("余额不是那么足了~")
-        return prevalue
+      if (Number(currentValue)>Number(balance)) return prevalue; // 超过了总额度
+    
+    
+      if (currentValue[currentValue.length-1]==='.') { 
+        
+       setIsDisabled(true) // 以小数点结尾 按钮失效
+      }
+
+      if (currentValue === '0' || currentValue === '0.0' || currentValue === '0.00') {
+        setIsDisabled(true)     // 以上几种情况 按钮失效
+      } 
+
+        return currentValue
     })
 
   }
 
-  /* input框UI */
-  const handleSelect=(type:string,value:string)=>{
+  /* 做了键盘事件与input框交互的适配*/
+  const handleChange=(e:any)=>{
+    if(Number(e.nativeEvent.data)){
+    isSubmit(e.nativeEvent.data)
+    }
+  }
+
+  /* input框 和 底部键盘交互 */
+  const handleSelect:(type: string, e?: string | undefined) => void=(type,value)=>{
     switch(type){
-      case "add":
-        isSubmit(value)
+      case "add": 
+        if(value) {isSubmit(value)}
         break;
-      case "delete":
+      case "delete": 
         setInputValue((prevalue)=>{
           return String.prototype.slice.call(prevalue,0,prevalue.length-1)
         })
         break;
-      case "submit":
-        //1s后清空
-        setTimeout(()=>{
-          setInputValue('')
-        },1000)
-        handleMoney(Number(inputValue))
+      case "submit": //
+        if(window.confirm("确定提现吗")){
+
+            setInputValue('')
+
+          handleMoney(Number(inputValue))
+        }
+
     }
+  }
+
+/* 解决规则3问题，记录提现记录 */
+  const SetWithdrawalRecordArrFun =(Tobewithdrawn:number,ServiceCharge?:number)=>{
+      
+    SetWithdrawalRecordArr((preWithdrawalRecord)=>{
+      return [...preWithdrawalRecord,{Tobewithdrawn,ServiceCharge:ServiceCharge||0}]
+    })
   }
 
   /* 处理提交后的数据计算和保存 */
@@ -95,36 +122,35 @@ function App() {
 
 /* 解决规则2问题，累计1000内免手续费 */
     if(Cumulative+Tobewithdrawn>1000){
-/* 解决规则3问题，服务费最少0.1元 */
+/* 解决规则4问题，服务费最少0.1元 */
         const ServiceCharge = Tobewithdrawn*(1/1000)>=0.1?Tobewithdrawn*(1/1000):0.1
 
-        balance=balance-ServiceCharge
+        balance=balance-ServiceCharge // 加上提现手续费后的剩余额度
 
-      SetWithdrawalRecordArr((preWithdrawalRecord:any)=>{
-        console.log(preWithdrawalRecord);
-        return [...preWithdrawalRecord,{Tobewithdrawn,ServiceCharge}]
-      })
+      // SetWithdrawalRecordArr((preWithdrawalRecord)=>{
+      //   return [...preWithdrawalRecord,{Tobewithdrawn,ServiceCharge}]
+      // })
+      SetWithdrawalRecordArrFun(Tobewithdrawn,ServiceCharge)
+
     }else{
-      SetWithdrawalRecordArr((preWithdrawalRecord:any)=>{
-        return [...preWithdrawalRecord,{Tobewithdrawn,ServiceCharge:0}]
-      })
+      // SetWithdrawalRecordArr((preWithdrawalRecord)=>{
+      //   return [...preWithdrawalRecord,{Tobewithdrawn,ServiceCharge:0}]
+      // })
+      SetWithdrawalRecordArrFun(Tobewithdrawn)
     }
-
-
 
     //返回至localstorage
     localStorage.setItem('money',`${balance}`)
     //更新UI显示
     setMoney(balance.toFixed(2))
 
-    
-
   }
+
 
   return (
     <div className="container">
-      <Header inputValue={inputValue} money={money} />
-      <Footer onSelect={handleSelect} />
+      <Header inputValue={inputValue} money={money} onChange={handleChange} />
+      <Footer onSelect={handleSelect}  isDisabled={isDisabled} />
     </div>
   );
 }

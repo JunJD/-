@@ -8,4 +8,13 @@ npm yarn 启动项目
 
 
 
-## 功能描述
+## 应用描述
+### 应用-本地存储空间
+总额度 = > money
+累计提现 = > cumulative
+提现和手续费 = > withdrawalRecordArr
+
+### 组件
+父组件 App
+头部组件 Header 
+底部组件 Footer
