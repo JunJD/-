@@ -101,10 +101,7 @@ function App() {
 
         handleMoney(Number(inputValue))
       }
-      }else{
-        setIsDisabled(true) // 未输入 按钮失效
       }
-        
 
     }
   }

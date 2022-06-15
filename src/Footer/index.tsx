@@ -12,7 +12,6 @@ interface FooterProps{
 }
 
 const Footer:FC<FooterProps>=({onSelect,isDisabled})=>{   
-    // const [value,setValue] = useState('')
 
     const classes = classNames("c3",{
         "isDisabled":isDisabled    //点击失效的效果
