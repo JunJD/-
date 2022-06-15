@@ -37,9 +37,10 @@ function App() {
 
 /* 解决规则1问题，提现不得超过余额 */
   const isSubmit=(value:string)=>{
+
     /* 获取当前的剩余总额 */
     const balance = localStorage.getItem("money")
-
+    
     setInputValue((prevalue)=>{
       const currentValue =  prevalue.concat(value)
 
@@ -97,11 +98,16 @@ function App() {
       if(inputValue){
         if(window.confirm("确定提现吗")){
 
-          setInputValue('')
+            setInputValue('')
 
-        handleMoney(Number(inputValue))
+          handleMoney(Number(inputValue))
+        }
       }
-      }
+        break;
+        case "all": 
+          /* 获取当前的剩余总额 */
+    const balance = localStorage.getItem("money")
+    setInputValue(`${balance}`)
 
     }
   }
@@ -127,12 +133,14 @@ function App() {
 /* 解决规则4问题，服务费最少0.1元 */
         const ServiceCharge = Tobewithdrawn*(1/1000)>=0.1?Tobewithdrawn*(1/1000):0.1
 
-        balance=balance-ServiceCharge // 加上提现手续费后的剩余额度
-
+        const ActualReceipt=Tobewithdrawn-ServiceCharge // 加上提现手续费后的剩余额度
+        if(!(window.confirm(`实际到账${ActualReceipt}，手续费${ServiceCharge} `))){
+          return
+        }
       // SetWithdrawalRecordArr((preWithdrawalRecord)=>{
       //   return [...preWithdrawalRecord,{Tobewithdrawn,ServiceCharge}]
       // })
-      SetWithdrawalRecordArrFun(Tobewithdrawn,ServiceCharge)
+      SetWithdrawalRecordArrFun(ActualReceipt,ServiceCharge)
 
     }else{
       // SetWithdrawalRecordArr((preWithdrawalRecord)=>{
@@ -151,7 +159,7 @@ function App() {
 
   return (
     <div className="container">
-      <Header inputValue={inputValue} money={money} onChange={handleChange} />
+      <Header inputValue={inputValue} money={money} onChange={handleChange} onSelect={handleSelect}/>
       <Footer onSelect={handleSelect}  isDisabled={isDisabled} />
     </div>
   );
